@@ -6,7 +6,7 @@ G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
 
-LOGS_FOLDER="/var/log/expenceshell-logs"
+LOGS_FOLDER="/var/log/expense-logs"
 LOG_FILE=$(echo $0 | cut -d "." -f1 )
 TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)
 LOG_FILE_NAME="$LOGS_FOLDER/$LOG_FILE-$TIMESTAMP.log"
@@ -42,8 +42,8 @@ VALIDATE $? "Enabling MySQL Server"
 systemctl start mysqld &>>$LOG_FILE_NAME
 VALIDATE $? "Starting MySQL Server"
 
-mysql -h mysql.daws82s.online -u root -pExpenseApp@1 -e 'show databases;'
-mysql -h mysql.daws82s.online -u root -pExpenseApp@1 -e 'show databases;' &>>$LOG_FILE_NAME
+mysql -h mysql.devops82s.online -u root -pExpenseApp@1 -e 'show databases;'
+mysql -h mysql.devops82s.online -u root -pExpenseApp@1 -e 'show databases;' &>>$LOG_FILE_NAME
 
 if [ $? -ne 0 ]
 then
