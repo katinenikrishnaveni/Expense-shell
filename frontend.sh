@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 USERID=$(id -u)
@@ -29,26 +30,34 @@ CHECK_ROOT(){
     fi
 }
 
+mkdir -p $LOGS_FOLDER
 echo "Script started executing at: $TIMESTAMP" &>>$LOG_FILE_NAME
 
 CHECK_ROOT
 
-dnf install mysql-server -y &>>$LOG_FILE_NAME
-VALIDATE $? "Installing MySQL Server"
+dnf install nginx -y  &>>$LOG_FILE_NAME
+VALIDATE $? "Installing Nginx Server"
 
-systemctl enable mysqld &>>$LOG_FILE_NAME
-VALIDATE $? "Enabling MySQL Server"
+systemctl enable nginx &>>$LOG_FILE_NAME
+VALIDATE $? "Enabling Nginx server"
 
-systemctl start mysqld &>>$LOG_FILE_NAME
-VALIDATE $? "Starting MySQL Server"
+systemctl start nginx &>>$LOG_FILE_NAME
+VALIDATE $? "Starting Nginx Server"
 
-mysql -h mysql.devops82s.online -u root -pExpenseApp@1 -e 'show databases;' &>>$LOG_FILE_NAME
+rm -rf /usr/share/nginx/html/* &>>$LOG_FILE_NAME
+VALIDATE $? "Removing existing version of code"
 
-if [ $? -ne 0 ]
-then
-    echo "MySQL Root password not setup" &>>$LOG_FILE_NAME
-    mysql_secure_installation --set-root-pass ExpenseApp@1
-    VALIDATE $? "Setting Root Password"
-else
-    echo -e "MySQL Root password already setup ... $Y SKIPPING $N"
-fi
+curl -o /tmp/frontend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-frontend-v2.zip &>>$LOG_FILE_NAME
+VALIDATE $? "Downloading Latest code"
+
+cd /usr/share/nginx/html
+VALIDATE $? "Moving to HTML directory"
+
+unzip /tmp/frontend.zip &>>$LOG_FILE_NAME
+VALIDATE $? "unzipping the frontend code"
+
+cp /home/ec2-user/expense-shell/expense.cong /etc/nginx/default.d/expense.conf
+VALIDATE $? "Copied expense config"
+
+systemctl restart nginx &>>$LOG_FILE_NAME
+VALIDATE $? "Restarting nginx"
